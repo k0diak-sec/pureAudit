@@ -28,7 +28,7 @@ class NetworkScanner:
         self.target = target if target else self._detectSubnet()
 
     def _detectSubnet(self):
-        """Auto-detect the local network subnet."""
+        """Auto-detect assumes the local network subnet as a /24 and may not match segmented networks such as VLANS."""
         try:
             # Create a socket to determine local IP
             s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)

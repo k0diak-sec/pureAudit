@@ -26,33 +26,52 @@ cd pureAudit
 pip install -r requirements.txt
 ```
 
-## Usage
+### Usage
 
+### Full Security Audit
+Network discovery, port scanning, vulnerability analysis, and report generation.
 ```bash
-# Quick scan of local network
-python src/main.py --scan
+python src/main.py --audit --target 192.168.1.0/24
+```
 
-# Full audit with report
-python src/main.py --audit --output reports/
+### Quick Scan
+Discovery only — no port scan, no report.
+```bash
+python src/main.py --scan --target 192.168.1.0/24
+```
 
-# Scan specific subnet
-python src/main.py --target 192.168.1.0/24
+### Auto-detect Subnet
+For standard home networks (non-segmented).
+```bash
+python src/main.py --audit
 ```
 
 ## Project Roadmap
 
 - [x] Project structure & scaffolding
-- [ ] Network discovery module
-- [ ] Port scanning module
-- [ ] Service identification
-- [ ] Vulnerability flagging engine
-- [ ] Report generator (TXT & JSON)
-- [ ] CLI interface with Rich
-- [ ] Unit tests
+- [x] Network discovery module
+- [x] Port scanning module
+- [x] Vulnerability flagging engine
+- [x] Report generator (TXT & JSON)
+- [x] CLI interface with Rich
+- [x] Unit tests (portScanner)
+- [x] PureSecure branding & colors
+- [x] MIT License
+- [x] README updated (--target as primary usage)
+- [x] VLAN/segmented network documentation
+- [ ] MAC address vendor lookup (OUI database)
+- [ ] Device-aware vulnerability context (e.g., Apple vs router UPnP)
+- [ ] Add port 4444 (Metasploit/reverse shell) to RISKY_PORTS
+- [ ] Expand COMMON_PORTS for home network security
+- [ ] Service detection via banner grabbing
+- [ ] CLI flags: --verbose and --quiet modes
+- [ ] Color-coded severity in TXT reports
+- [ ] Unit tests (networkScanner)
+- [ ] Unit tests (reportGenerator)
 
 ## About
 
-Built by a Navy veteran and cybersecurity professional passionate about protecting families and seniors from digital threats. PureAudit is the open-source backbone of [PureSecure's](https://puresecure.cloud) home network assessment service.
+Built by a U.S. Navy veteran and cybersecurity professional passionate about protecting families and seniors from digital threats. PureAudit is the open-source backbone of [PureSecure's](https://puresecure.cloud/driveway-safety-scan.php) Driveway Safety Scan service.
 
 ## License
 
