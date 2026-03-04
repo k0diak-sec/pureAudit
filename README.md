@@ -59,10 +59,10 @@ python src/main.py --audit
 - [x] MIT License
 - [x] README updated (--target as primary usage)
 - [x] VLAN/segmented network documentation
+- [x] Add port 4444 (Metasploit/reverse shell) to RISKY_PORTS
+- [x] Expand COMMON_PORTS for home network security
 - [ ] MAC address vendor lookup (OUI database)
 - [ ] Device-aware vulnerability context (e.g., Apple vs router UPnP)
-- [ ] Add port 4444 (Metasploit/reverse shell) to RISKY_PORTS
-- [ ] Expand COMMON_PORTS for home network security
 - [ ] Service detection via banner grabbing
 - [ ] CLI flags: --verbose and --quiet modes
 - [ ] Color-coded severity in TXT reports
