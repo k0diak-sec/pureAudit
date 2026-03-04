@@ -21,21 +21,27 @@ COMMON_PORTS = {
     80: "HTTP",
     110: "POP3",
     135: "MS-RPC",
+    137: "NetBIOS-NS",
     139: "NetBIOS",
     143: "IMAP",
     443: "HTTPS",
     445: "SMB",
     993: "IMAPS",
     995: "POP3S",
+    1337: "Leetspeak/Backdoor",
     1433: "MSSQL",
+    1434: "MSSQL-UDP",
     1883: "MQTT",
+    2049: "NFS",
     3306: "MySQL",
     3389: "RDP",
     5432: "PostgreSQL",
     5900: "VNC",
+    8008: "HTTP-Alt",
     8080: "HTTP-Proxy",
     8443: "HTTPS-Alt",
     8888: "HTTP-Alt",
+    9000: "Web-Admin",
     9090: "Web-Admin",
     49152: "UPnP"
 }
@@ -62,6 +68,11 @@ RISKY_PORTS = {
         "reason": "MS-RPC is a common attack vector for Windows exploits",
         "recommendation": "Block from external access via firewall."
     },
+    137: {
+        "severity": "HIGH",
+        "reason": "NetBIOS Name Service exposes device names and network information",
+        "recommendation": "Disable NetBIOS over TCP/IP if not needed."
+    },    
     139: {
         "severity": "HIGH",
         "reason": "NetBIOS exposes file sharing and system information",
@@ -77,11 +88,21 @@ RISKY_PORTS = {
         "reason": "Exposed database server — risk of data breach",
         "recommendation": "Never expose databases to the network. Use firewall rules."
     },
+    1434: {
+        "severity": "HIGH",
+        "reason": "MSSQL UDP was exploited by the SQL Slammer worm and enables database discovery",
+        "recommendation": "Block from network access. Never expose databases."
+    },
     1883: {
         "severity": "MEDIUM",
         "reason": "MQTT (IoT protocol) often lacks authentication",
         "recommendation": "Enable authentication and use TLS (port 8883)."
     },
+    2049: {
+        "severity": "HIGH",
+        "reason": "NFS can expose entire file systems to the network without authentication",
+        "recommendation": "Restrict NFS to specific IPs or disable if not needed."  
+    },      
     3306: {
         "severity": "HIGH",
         "reason": "Exposed MySQL database server",
@@ -91,6 +112,11 @@ RISKY_PORTS = {
         "severity": "CRITICAL",
         "reason": "RDP is heavily targeted by brute-force and ransomware attacks",
         "recommendation": "Disable RDP or restrict to VPN-only access."
+    },
+    4444: {
+        "severity": "CRITICAL",
+        "reason": "Potential malware or unauthorized remote access by hacker",
+        "recommendation": "Immediately close port and contact PureSecure for remediation."
     },
     5432: {
         "severity": "HIGH",
