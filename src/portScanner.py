@@ -5,6 +5,7 @@ Scans hosts for open ports and flags common security issues.
 """
 
 import socket
+import time
 
 from rich.console import Console
 
@@ -181,6 +182,7 @@ class PortScanner:
                 sock.settimeout(self.timeout)
                 result = sock.connect_ex((ip, port))
                 sock.close()
+                time.sleep(0.5) 
 
                 if result == 0:
                     openPorts.append({

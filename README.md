@@ -61,6 +61,7 @@ python src/main.py --audit
 - [x] VLAN/segmented network documentation
 - [x] Add port 4444 (Metasploit/reverse shell) to RISKY_PORTS
 - [x] Expand COMMON_PORTS for home network security
+- [x] srp() tuning: retry and inter for reliable device discovery
 - [ ] MAC address vendor lookup (OUI database)
 - [ ] Device-aware vulnerability context (e.g., Apple vs router UPnP)
 - [ ] Service detection via banner grabbing
