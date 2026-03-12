@@ -74,15 +74,27 @@ def parseArgs():
         default="reports/",
         help="Output directory for audit reports"
     )
+    parser.add_argument(
+    "--quiet",
+    action="store_true",
+    help="Minimal output: banner, results table, and summary only"
+    )
+    parser.add_argument(
+        "--verbose",
+        action="store_true",
+        help="Detailed output: show every scan attempt and timing info"
+    )
     return parser.parse_args()
 
-def runFastScan(target, outputDir):
+def runFastScan(target, outputDir, verbosity=1):
     """Run a fast network discovery, 12-port scan security audit."""
-    console.print("\n[bold yellow]🔍 Running Fast Scan...[/bold yellow]\n")
+    if verbosity > 0:
+        console.print("\n[bold yellow]🔍 Running Quick Scan...[/bold yellow]\n")
     startTime = datetime.now()
 
     # Phase 1: Network Discovery
-    console.print("[bold #27becf]Phase 1: Network Discovery[/bold #27becf]")
+    if verbosity > 0:
+        console.print("[bold #27becf]Phase 1: Network Discovery[/bold #27becf]")
     scanner = NetworkScanner(target)
     devices = scanner.discoverDevices()
 
@@ -90,17 +102,28 @@ def runFastScan(target, outputDir):
         console.print("[red]No devices found. Audit aborted.[/red]")
         return
 
-    console.print(f"[green]✓ Found {len(devices)} device(s)[/green]\n")
+    if verbosity > 0:
+        console.print(f"[green]✓ Found {len(devices)} device(s)[/green]\n")
 
     # Phase 2: Port Scanning
-    console.print("[bold #27becf]Phase 2: Port Scanning[/bold #27becf]")
+    if verbosity > 0:
+        console.print("[bold #27becf]Phase 2: Port Scanning[/bold #27becf]")
     portScanner = PortScanner()
     scanResults = []
 
     for device in devices:
         ip = device["ip"]
-        console.print(f"  Scanning {ip}...")
+        if verbosity >= 1:
+            console.print(f"  Scanning {ip}...")
         ports = portScanner.scanHost(ip, QUICK_PORTS)
+
+        # Verbose: show each open port as it's found
+        if verbosity == 2:
+            for p in ports:
+                console.print(f"    [bold red]OPEN[/bold red] {p['port']}/{p['service']}")
+            if not ports:
+                console.print(f"    [dim]No open ports[/dim]")
+
         scanResults.append({
             "ip": ip,
             "mac": device.get("mac", "Unknown"),
@@ -109,107 +132,37 @@ def runFastScan(target, outputDir):
             "ports": ports
         })
 
-    console.print(f"[green]✓ Port scan complete[/green]\n")
+    if verbosity > 0:
+        console.print(f"[green]✓ Port scan complete[/green]\n")
 
     # Phase 3: Vulnerability Flagging
-    console.print("[bold #27becf]Phase 3: Vulnerability Analysis[/bold #27becf]")
-    for result in scanResults:
-        result["flags"] = portScanner.flagVulnerabilities(result["ports"], result.get("manufacturer", "Unknown")) 
-        totalFlags = sum(len(r["flags"]) for r in scanResults)
-    console.print(f"[yellow]⚠ Found {totalFlags} potential issue(s)[/yellow]\n")
-
-    # Phase 4: Report Generation
-    console.print("[bold #27becf]Phase 4: Generating Report[/bold #27becf]")
-    endTime = datetime.now()
-    duration = (endTime - startTime).total_seconds()
-
-    report = ReportGenerator(outputDir)
-    reportPath = report.generateReport(scanResults, duration)
-    console.print(f"[green]✓ Report saved to: {reportPath}[/green]\n")
-
-    # Summary
-    scanner.displayClientResults(devices)
-    console.print(Panel(
-        f"Devices scanned: {len(devices)}\n"
-        f"Issues found: {totalFlags}\n"
-        f"Duration: {duration:.1f}s\n"
-        f"Report: {reportPath}",
-        title="[bold #f25a29]PureAudit Summary[/bold #f25a29]",
-        expand=False
-    ))
-
-def runQuickScan(target):
-    """Run a quick network discovery scan."""
-    console.print("\n[bold yellow]⚡ Running Quick Scan...[/bold yellow]\n")
-    startTime = datetime.now()
-
-    scanner = NetworkScanner(target)
-    devices = scanner.discoverDevices()
-
-    if not devices:
-        console.print("[red]No devices found. Check your network connection or target subnet.[/red]")
-        return []
-    
-    endTime = datetime.now()
-    duration = (endTime - startTime).total_seconds()
-    console.print(f"[green]✓ Found {len(devices)} device(s) on the network[/green]\n")
-    scanner.displayResults(devices)
-
-    return devices
-
-
-def runFullAudit(target, outputDir):
-    """Run a full network security audit."""
-    console.print("\n[bold yellow]🔍 Running Full Security Audit...[/bold yellow]\n")
-    startTime = datetime.now()
-
-    # Phase 1: Network Discovery
-    console.print("[bold #27becf]Phase 1: Network Discovery[/bold #27becf]")
-    scanner = NetworkScanner(target)
-    devices = scanner.discoverDevices()
-
-    if not devices:
-        console.print("[red]No devices found. Audit aborted.[/red]")
-        return
-
-    console.print(f"[green]✓ Found {len(devices)} device(s)[/green]\n")
-
-    # Phase 2: Port Scanning
-    console.print("[bold #27becf]Phase 2: Port Scanning[/bold #27becf]")
-    portScanner = PortScanner()
-    scanResults = []
-
-    for device in devices:
-        ip = device["ip"]
-        console.print(f"  Scanning {ip}...")
-        ports = portScanner.scanHost(ip)
-        scanResults.append({
-            "ip": ip,
-            "mac": device.get("mac", "Unknown"),
-            "hostname": device.get("hostname", "Unknown"),
-            "manufacturer": device.get("manufacturer", "Unknown"),
-            "ports": ports
-        })
-
-    console.print(f"[green]✓ Port scan complete[/green]\n")
-
-    # Phase 3: Vulnerability Flagging
-    console.print("[bold #27becf]Phase 3: Vulnerability Analysis[/bold #27becf]")
+    if verbosity > 0:
+        console.print("[bold #27becf]Phase 3: Vulnerability Analysis[/bold #27becf]")
     for result in scanResults:
         result["flags"] = portScanner.flagVulnerabilities(result["ports"], result.get("manufacturer", "Unknown"))
-        totalFlags = sum(len(r["flags"]) for r in scanResults)
-    console.print(f"[yellow]⚠ Found {totalFlags} potential issue(s)[/yellow]\n")
+
+        # Verbose: show each flag as it's found
+        if verbosity == 2:
+            for flag in result["flags"]:
+                console.print(f"    [{flag['severity']}] {flag['port']}/{flag['service']}: {flag['reason']}")
+
+    totalFlags = sum(len(r["flags"]) for r in scanResults)
+    if verbosity > 0:
+        console.print(f"[yellow]⚠ Found {totalFlags} potential issue(s)[/yellow]\n")
 
     # Phase 4: Report Generation
-    console.print("[bold #27becf]Phase 4: Generating Report[/bold #27becf]")
+    if verbosity > 0:
+        console.print("[bold #27becf]Phase 4: Generating Report[/bold #27becf]")
     endTime = datetime.now()
     duration = (endTime - startTime).total_seconds()
 
     report = ReportGenerator(outputDir)
     reportPath = report.generateReport(scanResults, duration)
-    console.print(f"[green]✓ Report saved to: {reportPath}[/green]\n")
+    if verbosity > 0:
+        console.print(f"[green]✓ Report saved to: {reportPath}[/green]\n")
 
-    # Summary
+    # Always show the client table and summary
+    scanner.displayClientResults(devices)
     console.print(Panel(
         f"[bold]Audit Complete[/bold]\n"
         f"Devices scanned: {len(devices)}\n"
@@ -220,6 +173,126 @@ def runFullAudit(target, outputDir):
         expand=False
     ))
 
+def runQuickScan(target, verbosity=1):
+    """Run a quick network discovery scan."""
+    if verbosity > 0:
+        console.print("\n[bold yellow]⚡ Running Quick Scan...[/bold yellow]\n")
+    startTime = datetime.now()
+
+    scanner = NetworkScanner(target)
+    devices = scanner.discoverDevices()
+
+    if not devices:
+        console.print("[red]No devices found. Check your network connection or target subnet.[/red]")
+        return []
+
+    endTime = datetime.now()
+    duration = (endTime - startTime).total_seconds()
+
+    if verbosity > 0:
+        console.print(f"[green]✓ Found {len(devices)} device(s) on the network[/green]\n")
+
+    if verbosity == 2:
+        for device in devices:
+            console.print(f"    {device['ip']} | {device['mac']} | {device['hostname']} | {device.get('manufacturer', 'Unknown')}")
+        console.print("")
+
+    scanner.displayResults(devices)
+
+    if verbosity > 0:
+        console.print(f"\n[dim]Scan completed in {duration:.1f}s[/dim]")
+
+    return devices
+
+
+def runFullAudit(target, outputDir, verbosity=1):
+    """Run a full network security audit."""
+    if verbosity > 0:
+        console.print("\n[bold yellow]🔍 Running Full Security Audit...[/bold yellow]\n")
+    startTime = datetime.now()
+
+    # Phase 1: Network Discovery
+    if verbosity > 0:
+        console.print("[bold #27becf]Phase 1: Network Discovery[/bold #27becf]")
+    scanner = NetworkScanner(target)
+    devices = scanner.discoverDevices()
+
+    if not devices:
+        console.print("[red]No devices found. Audit aborted.[/red]")
+        return
+
+    if verbosity > 0:
+        console.print(f"[green]✓ Found {len(devices)} device(s)[/green]\n")
+
+    if verbosity == 2:
+        for device in devices:
+            console.print(f"    {device['ip']} | {device['mac']} | {device['hostname']} | {device.get('manufacturer', 'Unknown')}")
+        console.print("")
+
+    # Phase 2: Port Scanning
+    if verbosity > 0:
+        console.print("[bold #27becf]Phase 2: Port Scanning[/bold #27becf]")
+    portScanner = PortScanner()
+    scanResults = []
+
+    for device in devices:
+        ip = device["ip"]
+        if verbosity >= 1:
+            console.print(f"  Scanning {ip}...")
+        ports = portScanner.scanHost(ip)
+
+        if verbosity == 2:
+            for p in ports:
+                console.print(f"    [bold red]OPEN[/bold red] {p['port']}/{p['service']}")
+            if not ports:
+                console.print(f"    [dim]No open ports[/dim]")
+
+        scanResults.append({
+            "ip": ip,
+            "mac": device.get("mac", "Unknown"),
+            "hostname": device.get("hostname", "Unknown"),
+            "manufacturer": device.get("manufacturer", "Unknown"),
+            "ports": ports
+        })
+
+    if verbosity > 0:
+        console.print(f"[green]✓ Port scan complete[/green]\n")
+
+    # Phase 3: Vulnerability Flagging
+    if verbosity > 0:
+        console.print("[bold #27becf]Phase 3: Vulnerability Analysis[/bold #27becf]")
+    for result in scanResults:
+        result["flags"] = portScanner.flagVulnerabilities(result["ports"], result.get("manufacturer", "Unknown"))
+
+        if verbosity == 2:
+            for flag in result["flags"]:
+                console.print(f"    [{flag['severity']}] {flag['port']}/{flag['service']}: {flag['reason']}")
+
+    totalFlags = sum(len(r["flags"]) for r in scanResults)
+    if verbosity > 0:
+        console.print(f"[yellow]⚠ Found {totalFlags} potential issue(s)[/yellow]\n")
+
+    # Phase 4: Report Generation
+    if verbosity > 0:
+        console.print("[bold #27becf]Phase 4: Generating Report[/bold #27becf]")
+    endTime = datetime.now()
+    duration = (endTime - startTime).total_seconds()
+
+    report = ReportGenerator(outputDir)
+    reportPath = report.generateReport(scanResults, duration)
+    if verbosity > 0:
+        console.print(f"[green]✓ Report saved to: {reportPath}[/green]\n")
+
+    # Summary always shows
+    console.print(Panel(
+        f"[bold]Audit Complete[/bold]\n"
+        f"Devices scanned: {len(devices)}\n"
+        f"Issues found: {totalFlags}\n"
+        f"Duration: {duration:.1f}s\n"
+        f"Report: {reportPath}",
+        title="[bold #f25a29]PureAudit Summary[/bold #f25a29]",
+        expand=False
+    ))
 
 def main():
     """Main entry point for PureAudit."""
@@ -233,13 +306,18 @@ def main():
 
     target = args.target if args.target else None
 
-    if args.fast:
-        runFastScan(target, args.output)
-    elif args.scan:
-        runQuickScan(target)
-    elif args.audit:
-        runFullAudit(target, args.output)
+    verbosity = 1
+    if args.quiet:
+        verbosity = 0
+    elif args.verbose:
+        verbosity = 2
 
+    if args.fast:
+        runFastScan(target, args.output, verbosity)
+    elif args.scan:
+        runQuickScan(target, verbosity)
+    elif args.audit:
+        runFullAudit(target, args.output, verbosity)
 
 if __name__ == "__main__":
     main()
