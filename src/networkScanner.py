@@ -155,4 +155,18 @@ class NetworkScanner:
                 device["manufacturer"]
             )
 
+    def displayClientResults(self, devices):
+        """Display discovered devices in a formatted table."""
+        table = Table(title="Discovered Devices", show_lines=True)
+        table.add_column("#", style="dim", width=4)
+        table.add_column("Hostname", style="yellow")
+        table.add_column("Manufacturer", style="magenta")   
+
+        for idx, device in enumerate(devices, 1):
+            table.add_row(
+                str(idx),
+                device["hostname"],
+                device["manufacturer"]
+            )
+
         console.print(table)

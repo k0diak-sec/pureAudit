@@ -128,8 +128,8 @@ def runFastScan(target, outputDir):
     console.print(f"[green]✓ Report saved to: {reportPath}[/green]\n")
 
     # Summary
+    scanner.displayClientResults(devices)
     console.print(Panel(
-        f"[bold]Audit Complete[/bold]\n"
         f"Devices scanned: {len(devices)}\n"
         f"Issues found: {totalFlags}\n"
         f"Duration: {duration:.1f}s\n"
