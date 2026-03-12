@@ -212,45 +212,74 @@ class PortScanner:
 
         return openPorts
 
-    def flagVulnerabilities(self, openPorts):
-        """
-        Analyze open ports and flag security risks.
+    def flagVulnerabilities(self, openPorts, manufacturer="Unknown"):
+            """
+            Analyze open ports and flag security risks.
 
-        Args:
-            openPorts: List of open port dicts from scanHost().
+            Args:
+             openPorts: List of open port dicts from scanHost().
+            manufacturer: Manufacturer name from OUI lookup.
 
-        Returns:
+            Returns:
             List of vulnerability flag dicts.
-        """
-        flags = []
+         """
+            flags = []
 
-        for portInfo in openPorts:
-            portNum = portInfo["port"]
+            for portInfo in openPorts:
+                portNum = portInfo["port"]
 
-            if portNum in RISKY_PORTS:
-                risk = RISKY_PORTS[portNum]
+                # Device-aware UPnP context
+                if portNum == 49152:
+                    if manufacturer == "Randomized MAC":
+                        flags.append({
+                            "port": portNum,
+                            "service": portInfo["service"],
+                            "severity": "LOW",
+                            "reason": "Device is using a randomized MAC address with UPnP-range port open. Likely an Apple device using AirPlay/Bonjour.",
+                            "recommendation": "Ask client if an Apple product is connected to the network. If confirmed, this is normal behavior."
+                        })
+                    elif "Apple" in manufacturer:
+                        flags.append({
+                            "port": portNum,
+                            "service": portInfo["service"],
+                            "severity": "INFO",
+                            "reason": "Apple device using port 49152 for AirPlay/Bonjour services. This is expected behavior.",
+                            "recommendation": "No action needed. Standard Apple networking."
+                        })
+                    else:
+                        flags.append({
+                            "port": portNum,
+                            "service": portInfo["service"],
+                            "severity": RISKY_PORTS[portNum]["severity"],
+                            "reason": RISKY_PORTS[portNum]["reason"],
+                            "recommendation": RISKY_PORTS[portNum]["recommendation"]
+                        })
+                    continue
+
+                if portNum in RISKY_PORTS:
+                    risk = RISKY_PORTS[portNum]
+                    flags.append({
+                        "port": portNum,
+                        "service": portInfo["service"],
+                        "severity": risk["severity"],
+                        "reason": risk["reason"],
+                        "recommendation": risk["recommendation"]
+                    })
+
+            # Check for HTTP without HTTPS
+            httpOpen = any(p["port"] == 80 for p in openPorts)
+            httpsOpen = any(p["port"] == 443 for p in openPorts)
+
+            if httpOpen and not httpsOpen:
                 flags.append({
-                    "port": portNum,
-                    "service": portInfo["service"],
-                    "severity": risk["severity"],
-                    "reason": risk["reason"],
-                    "recommendation": risk["recommendation"]
+                    "port": 80,
+                    "service": "HTTP",
+                    "severity": "MEDIUM",
+                    "reason": "HTTP service running without HTTPS counterpart",
+                    "recommendation": "Enable HTTPS with a valid SSL/TLS certificate."
                 })
 
-        # Check for HTTP without HTTPS
-        httpOpen = any(p["port"] == 80 for p in openPorts)
-        httpsOpen = any(p["port"] == 443 for p in openPorts)
-
-        if httpOpen and not httpsOpen:
-            flags.append({
-                "port": 80,
-                "service": "HTTP",
-                "severity": "MEDIUM",
-                "reason": "HTTP service running without HTTPS counterpart",
-                "recommendation": "Enable HTTPS with a valid SSL/TLS certificate."
-            })
-
-        return flags
+            return flags
 
     def getPortSummary(self, openPorts):
         """Return a quick summary string of open ports."""

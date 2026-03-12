@@ -94,6 +94,7 @@ class ReportGenerator:
             lines.append("")
             lines.append(f"  DEVICE {idx}: {result['ip']}")
             lines.append(f"    MAC:      {result['mac']}")
+            lines.append(f"    Manufacturer:      {result['manufacturer']}")
             lines.append(f"    Hostname: {result['hostname']}")
             lines.append("")
 

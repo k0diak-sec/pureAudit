@@ -101,11 +101,11 @@ pureAudit/
 - [x] MAC address vendor lookup (OUI database, 39,000+ entries)
 - [x] Randomized MAC detection (locally administered bit check)
 - [x] Fast scan mode (--fast) with 12-port QUICK_PORTS profile
-- [ ] Device-aware vulnerability context (Apple randomized MAC vs known manufacturer UPnP)
+- [x] Unit tests (networkScanner)
+- [x] Unit tests (reportGenerator)
+- [x] Device-aware vulnerability context (Apple randomized MAC vs known manufacturer UPnP)
 - [ ] Fast scan CLI: display hostname and manufacturer, save IP and MAC to file
 - [ ] CLI flags: --verbose and --quiet modes
-- [ ] Unit tests (networkScanner)
-- [ ] Unit tests (reportGenerator)
 
 ### Future / V2
 - [ ] Service detection via banner grabbing

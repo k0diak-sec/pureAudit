@@ -105,6 +105,7 @@ def runFastScan(target, outputDir):
             "ip": ip,
             "mac": device.get("mac", "Unknown"),
             "hostname": device.get("hostname", "Unknown"),
+            "manufacturer": device.get("manufacturer", "Unknown"),
             "ports": ports
         })
 
@@ -113,9 +114,8 @@ def runFastScan(target, outputDir):
     # Phase 3: Vulnerability Flagging
     console.print("[bold #27becf]Phase 3: Vulnerability Analysis[/bold #27becf]")
     for result in scanResults:
-        result["flags"] = portScanner.flagVulnerabilities(result["ports"])
-
-    totalFlags = sum(len(r["flags"]) for r in scanResults)
+        result["flags"] = portScanner.flagVulnerabilities(result["ports"], result.get("manufacturer", "Unknown")) 
+        totalFlags = sum(len(r["flags"]) for r in scanResults)
     console.print(f"[yellow]⚠ Found {totalFlags} potential issue(s)[/yellow]\n")
 
     # Phase 4: Report Generation
@@ -187,6 +187,7 @@ def runFullAudit(target, outputDir):
             "ip": ip,
             "mac": device.get("mac", "Unknown"),
             "hostname": device.get("hostname", "Unknown"),
+            "manufacturer": device.get("manufacturer", "Unknown"),
             "ports": ports
         })
 
@@ -195,9 +196,8 @@ def runFullAudit(target, outputDir):
     # Phase 3: Vulnerability Flagging
     console.print("[bold #27becf]Phase 3: Vulnerability Analysis[/bold #27becf]")
     for result in scanResults:
-        result["flags"] = portScanner.flagVulnerabilities(result["ports"])
-
-    totalFlags = sum(len(r["flags"]) for r in scanResults)
+        result["flags"] = portScanner.flagVulnerabilities(result["ports"], result.get("manufacturer", "Unknown"))
+        totalFlags = sum(len(r["flags"]) for r in scanResults)
     console.print(f"[yellow]⚠ Found {totalFlags} potential issue(s)[/yellow]\n")
 
     # Phase 4: Report Generation
