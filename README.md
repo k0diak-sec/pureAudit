@@ -2,16 +2,26 @@
 
 A Python-based home network security auditing tool built by [PureSecure](https://puresecure.cloud).
 
-PureAudit scans local networks to identify connected devices, detect open ports, flag security misconfigurations, and generate actionable audit reports for families and small businesses.
+PureAudit scans local networks to identify security risks, open ports, and common misconfigurations, helping families and small businesses understand their network exposure.
 
 ## Features
 
-- **Network Discovery** - Identifies all active devices on the local network via ARP scanning
-- **Manufacturer Identification** - Resolves device manufacturers from MAC addresses using the IEEE OUI database (39,000+ entries)
-- **Randomized MAC Detection** - Identifies devices using privacy-randomized MAC addresses (common on Apple/Android devices)
-- **Port Scanning** - Detects open ports and maps them to known services
-- **Vulnerability Flagging** - Flags common security misconfigurations with severity ratings and remediation steps
-- **Report Generation** - Outputs human-readable TXT and machine-readable JSON audit reports
+- **Network Discovery** -- Identifies all active devices on the local network via ARP scanning
+- **Manufacturer Identification** -- Resolves device manufacturers from MAC addresses using the IEEE OUI database (39,000+ entries)
+- **Randomized MAC Detection** -- Flags devices using locally administered (randomized) MAC addresses
+- **Device-Aware Vulnerability Context** -- Differentiates Apple/randomized MAC UPnP from actual security risks
+- **Fast Scan Mode** -- 12-port targeted scan with client-facing slim table, optimized for quick demos
+- **Full Audit Mode** -- Comprehensive port scan across 30+ common ports
+- **Vulnerability Flagging** -- Flags risky open ports with severity ratings and plain-English recommendations
+- **Report Generation** -- Outputs human-readable TXT and machine-readable JSON audit reports
+- **Verbosity Controls** -- --quiet for clean client demos, --verbose for field debugging
+
+## Tech Stack
+
+- Python 3.10+
+- Scapy (network packet crafting and ARP scanning)
+- Rich (terminal UI and formatted output)
+- IEEE OUI Database (offline manufacturer lookup)
 
 ## Installation
 
@@ -26,40 +36,55 @@ pip install -r requirements.txt
 ## Usage
 
 ### Full Security Audit
-Network discovery, port scanning across 32 common ports, vulnerability analysis, and report generation.
+Network discovery, port scanning (30+ ports), vulnerability analysis, and report generation.
 ```bash
 sudo venv/bin/python src/main.py --audit --target 192.168.1.0/24
 ```
 
 ### Fast Scan
-Network discovery with a targeted 12-port scan optimized for home network assessments.
+Network discovery, 12-port targeted scan, vulnerability analysis, and report generation. Client-facing slim table shows hostname and manufacturer only.
 ```bash
 sudo venv/bin/python src/main.py --fast --target 192.168.1.0/24
 ```
 
 ### Quick Scan
-Device discovery only. No port scanning, no report.
+Discovery only. No port scan, no report.
 ```bash
 sudo venv/bin/python src/main.py --scan --target 192.168.1.0/24
 ```
 
+### Single Device Scan
+Target a specific IP for faster testing.
+```bash
+sudo venv/bin/python src/main.py --fast --target 192.168.1.51
+```
+
+### Verbosity Flags
+Combine with any scan mode.
+```bash
+# Quiet: banner, table, and summary only
+sudo venv/bin/python src/main.py --fast --quiet --target 192.168.1.0/24
+
+# Verbose: show every scan attempt, open port, and flag detail
+sudo venv/bin/python src/main.py --fast --verbose --target 192.168.1.0/24
+```
+
 ### Auto-detect Subnet
-For standard (non-segmented) home networks.
+For standard home networks (non-segmented). Not recommended for VLAN environments.
 ```bash
 sudo venv/bin/python src/main.py --audit
 ```
 
 ### Notes
-- `sudo` is required for ARP scanning. Without it, the tool falls back to reading the local ARP table.
+- `sudo` is required for ARP scanning. Without it, the tool falls back to reading the ARP table.
 - Disable VPN before scanning for accurate local hostname resolution.
-- For VLAN-segmented networks (Firewalla, UniFi), always use `--target` with your specific subnet.
+- Always run from the project root directory so reports save to the correct location.
 
-## Tech Stack
+## Running Tests
 
-- Python 3.10+
-- Scapy (network packet crafting and ARP discovery)
-- Rich (terminal UI and formatted output)
-- IEEE OUI Database (manufacturer identification)
+```bash
+python -m unittest tests/testPortScanner.py tests/testNetworkScanner.py tests/testReportGenerator.py -v
+```
 
 ## Project Structure
 
@@ -70,14 +95,17 @@ pureAudit/
 ├── .gitignore
 ├── requirements.txt
 ├── reports/
+│   └── .gitkeep
 ├── src/
 │   ├── main.py
 │   ├── networkScanner.py
-│   ├── ouiDatabase.py
 │   ├── portScanner.py
-│   └── reportGenerator.py
+│   ├── reportGenerator.py
+│   └── ouiDatabase.py
 ├── tests/
-│   └── testPortScanner.py
+│   ├── testPortScanner.py
+│   ├── testNetworkScanner.py
+│   └── testReportGenerator.py
 └── utils/
     └── buildOuiDatabase.py
 ```
@@ -90,10 +118,9 @@ pureAudit/
 - [x] Vulnerability flagging engine
 - [x] Report generator (TXT and JSON)
 - [x] CLI interface with Rich
-- [x] Unit tests (portScanner)
+- [x] Unit tests (portScanner, networkScanner, reportGenerator)
 - [x] PureSecure branding and colors
 - [x] MIT License
-- [x] README updated (--target as primary usage)
 - [x] VLAN/segmented network documentation
 - [x] srp() tuning: retry and inter for reliable device discovery
 - [x] Add port 4444 (Metasploit/reverse shell) to RISKY_PORTS
@@ -101,11 +128,10 @@ pureAudit/
 - [x] MAC address vendor lookup (OUI database, 39,000+ entries)
 - [x] Randomized MAC detection (locally administered bit check)
 - [x] Fast scan mode (--fast) with 12-port QUICK_PORTS profile
-- [x] Unit tests (networkScanner)
-- [x] Unit tests (reportGenerator)
 - [x] Device-aware vulnerability context (Apple randomized MAC vs known manufacturer UPnP)
-- [ ] Fast scan CLI: display hostname and manufacturer, save IP and MAC to file
-- [ ] CLI flags: --verbose and --quiet modes
+- [x] Fast scan client-facing slim table with full details saved to report
+- [x] CLI flags: --verbose and --quiet modes
+- [ ] Multi-target scanning (scan specific IPs in a single run)
 
 ### Future / V2
 - [ ] Service detection via banner grabbing
