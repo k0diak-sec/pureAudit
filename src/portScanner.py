@@ -11,6 +11,21 @@ from rich.console import Console
 
 console = Console()
 
+# Quick and common ports to scan and their associated services
+QUICK_PORTS = {
+    22:    "SSH",
+    23:    "Telnet",
+    80:    "HTTP",
+    139:   "NetBIOS",
+    443:   "HTTPS",
+    445:   "SMB",
+    1883:  "MQTT",
+    3389:  "RDP",
+    4444:  "Metasploit/Backdoor",
+    5900:  "VNC",
+    8080:  "HTTP-Proxy",
+    49152: "UPnP"
+}
 
 # Common ports to scan and their associated services
 COMMON_PORTS = {
@@ -36,6 +51,7 @@ COMMON_PORTS = {
     2049: "NFS",
     3306: "MySQL",
     3389: "RDP",
+    4444:  "Metasploit/Backdoor",
     5432: "PostgreSQL",
     5900: "VNC",
     8008: "HTTP-Alt",

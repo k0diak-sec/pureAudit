@@ -10,6 +10,7 @@ import platform
 
 from rich.console import Console
 from rich.table import Table
+from ouiDatabase import OUI_DATABASE
 
 console = Console()
 
@@ -51,7 +52,7 @@ class NetworkScanner:
         Discover active devices on the network using ARP scan.
 
         Returns:
-            List of dicts with keys: ip, mac, hostname
+            List of dicts with keys: ip, mac, hostname, manufacturer
         """
         console.print(f"[dim]Scanning {self.target}...[/dim]")
         devices = []
@@ -65,14 +66,15 @@ class NetworkScanner:
             packet = broadcast / arpRequest
 
             # Send packet and capture responses
-            answered, _ = srp(packet, timeout=3, verbose=False)
+            answered, _ = srp(packet, inter=0.3, retry=2, timeout=3, verbose=False)
 
             for sent, received in answered:
                 hostname = self._resolveHostname(received.psrc)
                 devices.append({
                     "ip": received.psrc,
                     "mac": received.hwsrc,
-                    "hostname": hostname
+                    "hostname": hostname,
+                    "manufacturer": self._resolveManufacturer(received.hwsrc)
                 })
 
         except ImportError:
@@ -110,7 +112,9 @@ class NetworkScanner:
                             devices.append({
                                 "ip": ip,
                                 "mac": mac,
-                                "hostname": hostname if hostname != "?" else "Unknown"
+                                "hostname": hostname if hostname != "?" 
+                                else "Unknown",
+                                "manufacturer": self._resolveManufacturer(mac)                          
                             })
 
         except Exception as e:
@@ -125,6 +129,13 @@ class NetworkScanner:
             return hostname
         except (socket.herror, socket.gaierror):
             return "Unknown"
+        
+    def _resolveManufacturer(self, mac):
+        """Resolve MAC address to manufacturer name via OUI lookup."""
+        prefix = mac[:8].upper().replace(":", "-")
+        if prefix in OUI_DATABASE:
+             return OUI_DATABASE[prefix]
+        return "Randomized MAC" if (int(mac[:2], 16) & 0x02) else "Unknown"
 
     def displayResults(self, devices):
         """Display discovered devices in a formatted table."""
@@ -133,13 +144,15 @@ class NetworkScanner:
         table.add_column("IP Address", style="cyan")
         table.add_column("MAC Address", style="green")
         table.add_column("Hostname", style="yellow")
+        table.add_column("Manufacturer", style="magenta")   
 
         for idx, device in enumerate(devices, 1):
             table.add_row(
                 str(idx),
                 device["ip"],
                 device["mac"],
-                device["hostname"]
+                device["hostname"],
+                device["manufacturer"]
             )
 
         console.print(table)
