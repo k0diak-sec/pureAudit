@@ -81,7 +81,7 @@ class NetworkScanner:
             console.print("[yellow]Scapy not installed. Falling back to ARP table scan...[/yellow]")
             devices = self._fallbackArpScan()
 
-        except PermissionError:
+        except (PermissionError, Exception):
             console.print("[yellow]Root/admin privileges required for ARP scan. Falling back...[/yellow]")
             devices = self._fallbackArpScan()
 

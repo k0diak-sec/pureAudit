@@ -93,20 +93,22 @@ pureAudit/
 - [x] Unit tests (portScanner)
 - [x] PureSecure branding and colors
 - [x] MIT License
+- [x] README updated (--target as primary usage)
 - [x] VLAN/segmented network documentation
+- [x] srp() tuning: retry and inter for reliable device discovery
 - [x] Add port 4444 (Metasploit/reverse shell) to RISKY_PORTS
 - [x] Expand COMMON_PORTS for home network security
-- [x] srp() tuning: retry and inter for reliable device discovery
 - [x] MAC address vendor lookup (OUI database, 39,000+ entries)
 - [x] Randomized MAC detection (locally administered bit check)
-- [x] Fast scan mode (--fast) with targeted 12-port profile
-- [x] Manufacturer column in device discovery output
-- [ ] Device-aware vulnerability context (e.g., Apple vs router UPnP)
-- [ ] Service detection via banner grabbing
+- [x] Fast scan mode (--fast) with 12-port QUICK_PORTS profile
+- [ ] Device-aware vulnerability context (Apple randomized MAC vs known manufacturer UPnP)
+- [ ] Fast scan CLI: display hostname and manufacturer, save IP and MAC to file
 - [ ] CLI flags: --verbose and --quiet modes
-- [ ] Color-coded severity in TXT reports
 - [ ] Unit tests (networkScanner)
 - [ ] Unit tests (reportGenerator)
+
+### Future / V2
+- [ ] Service detection via banner grabbing
 
 ## About
 
