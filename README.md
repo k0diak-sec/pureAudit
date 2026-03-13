@@ -1,6 +1,6 @@
 # PureAudit
 
-A Python-based home network security auditing tool built by [PureSecure](https://puresecure.cloud).
+A Python-based home network security auditing tool built by [kodiak-Sec](https://github.com/k0diak-sec) for [PureSecure](https://puresecure.cloud).
 
 PureAudit scans local networks to identify security risks, open ports, and common misconfigurations, helping families and small businesses understand their network exposure.
 
