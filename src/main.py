@@ -45,12 +45,12 @@ def displayBanner():
 def parseArgs():
     """Parse command-line arguments."""
     parser = argparse.ArgumentParser(
-        description="PureAudit — Home Network Security Auditing Tool"
+        description="PureAudit | Home Network Security Auditing Tool"
     )
     parser.add_argument(
-        "--fast",
-        action="store_true",
-        help="12 Port scan: discover devices, scan 12 common ports, and flag vulnerabilities on the local network fast"
+        "--version",
+        action="version",
+        version="PureAudit v1.1"
     )
     parser.add_argument(
         "--scan",
