@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-PureAudit — Home Network Security Auditing Tool
+PureAudit | Home Network Security Auditing Tool
 Built by PureSecure | https://puresecure.cloud
 
 Usage:
